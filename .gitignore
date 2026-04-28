@@ -9,3 +9,34 @@ Thumbs.db
 *.log
 .planning/
 CHECKPOINT.md
+
+# Rust / Tauri
+target/
+*.rs.bk
+
+# iOS / Xcode
+*.xcworkspace/
+*.xcodeproj/xcuserdata/
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+
+# Android
+.gradle/
+local.properties
+*.apk
+*.aab
+packages/android/app/build/
+packages/android/build/
+packages/android/.idea/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Memory files (project-specific, not tracked)
+memory/
+transcripts/
+SOUL.md
+main-memory.md
+topic-memory.md

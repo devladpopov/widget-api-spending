@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ApiSpending" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#C96442</item>
+        <item name="android:colorAccent">#C96442</item>
+        <item name="android:windowBackground">#F4EFE3</item>
+        <item name="android:statusBarColor">#F4EFE3</item>
+        <item name="android:navigationBarColor">#F4EFE3</item>
+    </style>
+</resources>

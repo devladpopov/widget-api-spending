@@ -1,6 +1,7 @@
 import { render } from 'preact';
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { JSX } from 'preact';
+import { exportAsJSON, exportAsCSV, downloadFile } from '../shared/export';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'RUB', 'JPY', 'CNY', 'CAD', 'AUD', 'CHF', 'INR'];
 
@@ -152,6 +153,22 @@ function SettingsApp() {
     }
   }, [settings]);
 
+  const handleExportJSON = useCallback(async () => {
+    try {
+      const json = await exportAsJSON();
+      const date = new Date().toISOString().slice(0, 10);
+      downloadFile(json, `api-spending-${date}.json`, 'application/json');
+    } catch {}
+  }, []);
+
+  const handleExportCSV = useCallback(async () => {
+    try {
+      const csv = await exportAsCSV();
+      const date = new Date().toISOString().slice(0, 10);
+      downloadFile(csv, `api-spending-${date}.csv`, 'text/csv');
+    } catch {}
+  }, []);
+
   const handleClearData = useCallback(async () => {
     if (!confirm('Clear all recorded API usage data? This cannot be undone.')) return;
     try {
@@ -297,6 +314,15 @@ function SettingsApp() {
             <span style={s.statLabel}>Tracking since</span>
             <span style={s.statValue}>{stats.since}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Export */}
+      <div style={s.card}>
+        <div style={s.cardTitle}>Export</div>
+        <div style={s.btnRow}>
+          <button style={s.btn} onClick={handleExportCSV}>Export CSV</button>
+          <button style={s.btn} onClick={handleExportJSON}>Export JSON</button>
         </div>
       </div>
 

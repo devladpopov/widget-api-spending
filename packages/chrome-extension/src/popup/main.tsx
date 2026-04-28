@@ -1,5 +1,5 @@
 import { render } from 'preact';
-import { useState, useEffect, useCallback } from 'preact/hooks';
+import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
 import { calculateCost } from '@api-spending/core';
 import type { UsageEvent } from '@api-spending/core';
 import { Toad } from './components/Toad';
@@ -12,7 +12,56 @@ const PROVIDER_COLORS: Record<string, string> = {
   gemini: '#b8995c',
 };
 
-const SPARKLINE_PATH = 'M0 24 L20 22 L40 25 L60 18 L80 20 L100 14 L120 16 L140 12 L160 18 L180 10 L200 14 L220 8 L240 12 L260 6 L280 10 L300 4 L320 7';
+const SPARKLINE_FALLBACK = 'M0 24 L20 22 L40 25 L60 18 L80 20 L100 14 L120 16 L140 12 L160 18 L180 10 L200 14 L220 8 L240 12 L260 6 L280 10 L300 4 L320 7';
+
+/**
+ * Generate an SVG path string from usage events, bucketed into hourly slots.
+ * Each point's Y value represents the cost in that hour, scaled to fit the SVG height.
+ * Returns the fallback path when there are no events.
+ */
+function generateSparkline(
+  events: UsageEvent[],
+  hours = 24,
+  width = 320,
+  height = 32,
+): string {
+  if (!events || events.length === 0) return SPARKLINE_FALLBACK;
+
+  const now = Date.now();
+  const msPerHour = 3_600_000;
+  const windowStart = now - hours * msPerHour;
+
+  // Filter to events within the time window
+  const relevant = events.filter(e => e.timestamp >= windowStart);
+  if (relevant.length === 0) return SPARKLINE_FALLBACK;
+
+  // Bucket costs by hour (index 0 = oldest hour, index hours-1 = current hour)
+  const buckets = new Array<number>(hours).fill(0);
+  for (const e of relevant) {
+    const hourIndex = Math.min(
+      hours - 1,
+      Math.max(0, Math.floor((e.timestamp - windowStart) / msPerHour)),
+    );
+    buckets[hourIndex] += e.costUsd;
+  }
+
+  const maxCost = Math.max(...buckets);
+  if (maxCost === 0) return SPARKLINE_FALLBACK;
+
+  const padding = 2; // px padding top/bottom so the line doesn't clip edges
+  const stepX = width / (hours - 1);
+
+  const points = buckets.map((cost, i) => {
+    const x = Math.round(i * stepX * 100) / 100;
+    // Invert Y so higher cost = higher on screen (lower Y value in SVG coords)
+    const y = Math.round((height - padding - (cost / maxCost) * (height - padding * 2)) * 100) / 100;
+    return { x, y };
+  });
+
+  return points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`)
+    .join(' ');
+}
 
 // Mock data for initial development — will be replaced with chrome.storage data
 const MOCK_PROVIDERS = [
@@ -35,6 +84,7 @@ interface SpendingState {
   month: number;
   byProvider: Array<{ name: string; pct: number; cost: string; color: string }>;
   recent: Array<{ t: string; m: string; c: string; color: string }>;
+  events: UsageEvent[];
   lastUpdated: string;
   useMock: boolean;
 }
@@ -48,11 +98,17 @@ function App() {
     month: 142.50,
     byProvider: MOCK_PROVIDERS,
     recent: MOCK_RECENT,
+    events: [],
     lastUpdated: '2m ago',
     useMock: true,
   });
 
   const s = theme;
+
+  const sparklinePath = useMemo(
+    () => generateSparkline(state.events),
+    [state.events],
+  );
 
   const loadData = useCallback(async () => {
     try {
@@ -127,6 +183,7 @@ function App() {
         month,
         byProvider: byProvider.length > 0 ? byProvider : MOCK_PROVIDERS,
         recent: recent.length > 0 ? recent : MOCK_RECENT,
+        events: enriched,
         lastUpdated: 'just now',
         useMock: false,
       });
@@ -172,8 +229,8 @@ function App() {
                 <stop offset="100%" stop-color="#C96442" stop-opacity={s.sparkGradOpacity[1]} />
               </linearGradient>
             </defs>
-            <path d={`${SPARKLINE_PATH} L320 32 L0 32 Z`} fill="url(#sparkGrad)" />
-            <path d={SPARKLINE_PATH} fill="none" stroke="#C96442" stroke-width="1.5" />
+            <path d={`${sparklinePath} L320 32 L0 32 Z`} fill="url(#sparkGrad)" />
+            <path d={sparklinePath} fill="none" stroke="#C96442" stroke-width="1.5" />
           </svg>
         </div>
       </div>
