@@ -144,7 +144,9 @@ async function updateBadge(): Promise<void> {
     .filter((e: UsageEvent) => e.timestamp >= todayStart.getTime())
     .reduce((sum: number, e: UsageEvent) => sum + (e.costUsd ?? 0), 0);
 
-  const text = todayCost > 0 ? `$${todayCost.toFixed(todayCost >= 10 ? 0 : 2)}` : '';
+  const text = todayCost >= 100 ? `$${Math.round(todayCost)}`
+    : todayCost >= 10 ? `$${todayCost.toFixed(1)}`
+    : `$${todayCost.toFixed(2)}`;
   await chrome.action.setBadgeText({ text });
   await chrome.action.setBadgeBackgroundColor({ color: '#C96442' });
 }

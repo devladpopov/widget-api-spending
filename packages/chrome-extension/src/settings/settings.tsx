@@ -3,7 +3,40 @@ import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { exportAsJSON, exportAsCSV, downloadFile } from '../shared/export';
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'RUB', 'JPY', 'CNY', 'CAD', 'AUD', 'CHF', 'INR'];
+// Full currency list — Frankfurter API (ECB) supports all of these
+const CURRENCIES: Array<{ code: string; name: string; symbol: string }> = [
+  { code: 'USD', name: 'US Dollar', symbol: '$' },
+  { code: 'EUR', name: 'Euro', symbol: '\u20AC' },
+  { code: 'GBP', name: 'British Pound', symbol: '\u00A3' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: '\u00A5' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: 'CA$' },
+  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '\u00A5' },
+  { code: 'INR', name: 'Indian Rupee', symbol: '\u20B9' },
+  { code: 'KRW', name: 'South Korean Won', symbol: '\u20A9' },
+  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+  { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+  { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+  { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+  { code: 'PLN', name: 'Polish Zloty', symbol: 'z\u0142' },
+  { code: 'CZK', name: 'Czech Koruna', symbol: 'K\u010D' },
+  { code: 'HUF', name: 'Hungarian Forint', symbol: 'Ft' },
+  { code: 'TRY', name: 'Turkish Lira', symbol: '\u20BA' },
+  { code: 'MXN', name: 'Mexican Peso', symbol: 'MX$' },
+  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+  { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+  { code: 'THB', name: 'Thai Baht', symbol: '\u0E3F' },
+  { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
+  { code: 'PHP', name: 'Philippine Peso', symbol: '\u20B1' },
+  { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' },
+  { code: 'ILS', name: 'Israeli Shekel', symbol: '\u20AA' },
+  { code: 'RON', name: 'Romanian Leu', symbol: 'lei' },
+  { code: 'BGN', name: 'Bulgarian Lev', symbol: 'лв' },
+  { code: 'ISK', name: 'Icelandic Krona', symbol: 'kr' },
+];
 
 interface Settings {
   anthropicKey: string;
@@ -239,7 +272,7 @@ function SettingsApp() {
               value={settings.currency}
               onChange={(e) => update('currency', (e.target as HTMLSelectElement).value)}
             >
-              {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code} — {c.name}</option>)}
             </select>
           </div>
           <div style={{ ...s.field, flex: 1, marginBottom: 0 }}>
