@@ -39,6 +39,7 @@ const CURRENCIES: Array<{ code: string; name: string; symbol: string }> = [
 ];
 
 interface Settings {
+  mode: 'api' | 'plan';
   anthropicKey: string;
   openaiKey: string;
   currency: string;
@@ -49,6 +50,7 @@ interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = {
+  mode: 'api',
   anthropicKey: '',
   openaiKey: '',
   currency: 'USD',
@@ -224,6 +226,36 @@ function SettingsApp() {
       <div style={s.header}>
         <div style={s.h1}>API Spending Settings</div>
         <span style={s.version}>v0.1.0</span>
+      </div>
+
+      {/* Mode */}
+      <div style={s.card}>
+        <div style={s.cardTitle}>Tracking Mode</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            style={{
+              ...s.btn, flex: 1,
+              ...(settings.mode === 'api' ? s.btnPrimary : {}),
+            }}
+            onClick={() => update('mode', 'api')}
+          >
+            API Billing
+          </button>
+          <button
+            style={{
+              ...s.btn, flex: 1,
+              ...(settings.mode === 'plan' ? s.btnPrimary : {}),
+            }}
+            onClick={() => update('mode', 'plan')}
+          >
+            Subscription Plan
+          </button>
+        </div>
+        <div style={{ fontSize: 11, color: '#8a8470', marginTop: 10, lineHeight: 1.5 }}>
+          {settings.mode === 'api'
+            ? 'Track spending in dollars via Admin API keys or passive interception. For API/developer usage.'
+            : 'Track rate limits and session usage on Pro/Max/Plus plans. Shows remaining tokens and time to reset in the toolbar.'}
+        </div>
       </div>
 
       {/* API Keys */}
