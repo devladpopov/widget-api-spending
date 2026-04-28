@@ -56,6 +56,24 @@ export default defineConfig({
           resolve: { alias: coreAlias },
         });
 
+        // Build injected interceptor as IIFE (loaded via <script src> to bypass CSP)
+        await build({
+          configFile: false,
+          build: {
+            outDir: dist,
+            emptyOutDir: false,
+            lib: {
+              entry: resolve(__dirname, 'src/injected/interceptor.ts'),
+              formats: ['iife'],
+              name: 'interceptor',
+              fileName: () => 'interceptor.js',
+            },
+            rollupOptions: {
+              output: { inlineDynamicImports: true },
+            },
+          },
+        });
+
         // Build settings page as IIFE
         await build({
           configFile: false,
