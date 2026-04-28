@@ -147,8 +147,62 @@ async function updateBadge(): Promise<void> {
   const text = todayCost >= 100 ? `$${Math.round(todayCost)}`
     : todayCost >= 10 ? `$${todayCost.toFixed(1)}`
     : `$${todayCost.toFixed(2)}`;
-  await chrome.action.setBadgeText({ text });
-  await chrome.action.setBadgeBackgroundColor({ color: '#C96442' });
+
+  // Draw custom icon: toad on top, price badge below
+  try {
+    const sizes = [16, 32];
+    const imageData: Record<string, ImageData> = {};
+
+    for (const sz of sizes) {
+      const canvas = new OffscreenCanvas(sz, sz);
+      const ctx = canvas.getContext('2d')!;
+
+      // Load toad image
+      const resp = await fetch(chrome.runtime.getURL('assets/claude-toad-square.png'));
+      const blob = await resp.blob();
+      const bitmap = await createImageBitmap(blob);
+
+      // Draw toad in top portion (60% of icon height)
+      const toadH = Math.round(sz * 0.55);
+      const toadW = toadH;
+      const toadX = Math.round((sz - toadW) / 2);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(bitmap, toadX, 0, toadW, toadH);
+      bitmap.close();
+
+      // Draw price badge in bottom portion
+      const badgeH = Math.round(sz * 0.38);
+      const badgeY = sz - badgeH;
+      const badgeR = sz >= 32 ? 3 : 2;
+      const fontSize = sz >= 32 ? 9 : 6;
+
+      // Badge background (cream with orange border)
+      ctx.fillStyle = '#F4EFE3';
+      ctx.strokeStyle = '#C96442';
+      ctx.lineWidth = sz >= 32 ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.roundRect(1, badgeY, sz - 2, badgeH - 1, badgeR);
+      ctx.fill();
+      ctx.stroke();
+
+      // Badge text
+      ctx.fillStyle = '#C96442';
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, sz / 2, badgeY + badgeH / 2);
+
+      imageData[String(sz)] = ctx.getImageData(0, 0, sz, sz);
+    }
+
+    await chrome.action.setIcon({ imageData: imageData as unknown as Record<string, ImageData> });
+    // Clear text badge since we drew it into the icon
+    await chrome.action.setBadgeText({ text: '' });
+  } catch {
+    // Fallback to standard badge if canvas fails
+    await chrome.action.setBadgeText({ text });
+    await chrome.action.setBadgeBackgroundColor({ color: '#C96442' });
+  }
 }
 
 async function checkBudgetAlerts(): Promise<void> {

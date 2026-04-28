@@ -9,6 +9,7 @@ interface ToadProps {
 
 export function Toad({ size = 32, eyeColor = '#1a1815', onClick }: ToadProps): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const eyeLRef = useRef<HTMLDivElement>(null);
   const eyeRRef = useRef<HTMLDivElement>(null);
   const [blink, setBlink] = useState(false);
@@ -24,13 +25,24 @@ export function Toad({ size = 32, eyeColor = '#1a1815', onClick }: ToadProps): J
       const dx = e.clientX - cx;
       const dy = e.clientY - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const max = r.width * 0.035;
-      const scale = Math.min(1, dist / 200);
       const ang = Math.atan2(dy, dx);
-      const ox = Math.cos(ang) * max * scale;
-      const oy = Math.sin(ang) * max * scale;
+
+      // Eyes follow cursor
+      const eyeMax = r.width * 0.035;
+      const eyeScale = Math.min(1, dist / 200);
+      const ox = Math.cos(ang) * eyeMax * eyeScale;
+      const oy = Math.sin(ang) * eyeMax * eyeScale;
       if (eyeLRef.current) eyeLRef.current.style.transform = `translate(${ox}px, ${oy}px)`;
       if (eyeRRef.current) eyeRRef.current.style.transform = `translate(${ox}px, ${oy}px)`;
+
+      // Whole body shifts horizontally toward cursor (subtle lean)
+      const bodyMax = r.width * 0.06;
+      const bodyScale = Math.min(1, dist / 300);
+      const bodyX = Math.cos(ang) * bodyMax * bodyScale;
+      const bodyRotate = bodyX * 0.15; // slight tilt in movement direction
+      if (bodyRef.current) {
+        bodyRef.current.style.transform = `translateX(${bodyX}px) rotate(${bodyRotate}deg)`;
+      }
     };
     document.addEventListener('mousemove', onMove);
     return () => document.removeEventListener('mousemove', onMove);
@@ -80,14 +92,24 @@ export function Toad({ size = 32, eyeColor = '#1a1815', onClick }: ToadProps): J
         transition: 'transform 0.15s cubic-bezier(.5,1.8,.5,1)',
       }}
     >
-      <img
-        src="assets/claude-toad-clear-no-eyes.png"
-        alt=""
-        style={{ width: '100%', display: 'block', imageRendering: 'pixelated' }}
-        draggable={false}
-      />
-      <div ref={eyeLRef} style={eyeStyle('24.97%')} />
-      <div ref={eyeRRef} style={eyeStyle('66.90%')} />
+      <div
+        ref={bodyRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          transition: 'transform 0.12s ease-out',
+        }}
+      >
+        <img
+          src="assets/claude-toad-clear-no-eyes.png"
+          alt=""
+          style={{ width: '100%', display: 'block', imageRendering: 'pixelated' }}
+          draggable={false}
+        />
+        <div ref={eyeLRef} style={eyeStyle('24.97%')} />
+        <div ref={eyeRRef} style={eyeStyle('66.90%')} />
+      </div>
     </div>
   );
 }
