@@ -14,6 +14,10 @@ export default defineConfig({
       async closeBundle() {
         const dist = resolve(__dirname, 'dist');
 
+        const coreAlias = {
+          '@api-spending/core': resolve(__dirname, '../core/src/index.ts'),
+        };
+
         // Build background service worker as IIFE
         await build({
           configFile: false,
@@ -30,6 +34,7 @@ export default defineConfig({
               output: { inlineDynamicImports: true },
             },
           },
+          resolve: { alias: coreAlias },
         });
 
         // Build content script as IIFE
@@ -48,7 +53,44 @@ export default defineConfig({
               output: { inlineDynamicImports: true },
             },
           },
+          resolve: { alias: coreAlias },
         });
+
+        // Build settings page as IIFE
+        await build({
+          configFile: false,
+          build: {
+            outDir: dist,
+            emptyOutDir: false,
+            lib: {
+              entry: resolve(__dirname, 'src/settings/settings.tsx'),
+              formats: ['iife'],
+              name: 'settings',
+              fileName: () => 'settings.js',
+            },
+            rollupOptions: {
+              output: { inlineDynamicImports: true },
+            },
+          },
+          resolve: {
+            alias: {
+              ...coreAlias,
+              'react': 'preact/compat',
+              'react-dom': 'preact/compat',
+            },
+          },
+          plugins: [preact()],
+        });
+
+        // Copy settings HTML
+        let settingsHtml = readFileSync(resolve(__dirname, 'src/settings/index.html'), 'utf-8');
+        settingsHtml = settingsHtml
+          .replace('./settings.tsx', './settings.js')
+          .replace('<link rel="stylesheet" href="./settings.css" />', '<link rel="stylesheet" href="./assets/settings.css" />');
+        writeFileSync(resolve(dist, 'settings.html'), settingsHtml);
+
+        // Copy settings CSS
+        cpSync(resolve(__dirname, 'src/settings/settings.css'), resolve(dist, 'assets/settings.css'));
 
         // Copy manifest and assets
         cpSync(resolve(__dirname, 'manifest.json'), resolve(dist, 'manifest.json'));

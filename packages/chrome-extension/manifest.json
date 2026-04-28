@@ -5,7 +5,8 @@
   "description": "Real-time AI API spending tracker for Anthropic, OpenAI, and more",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms",
+    "notifications"
   ],
   "host_permissions": [
     "https://api.anthropic.com/*",
@@ -29,6 +30,7 @@
     "48": "assets/claude-toad-square.png",
     "128": "assets/claude-toad-square.png"
   },
+  "options_page": "settings.html",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
