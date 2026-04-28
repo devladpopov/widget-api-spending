@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Claude Toad Widget — Final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #f3f3f1; font-family: 'Inter', system-ui, sans-serif; }
+  .chrome-shell { width: 760px; background: #202124; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+  .chrome-titlebar { height: 36px; background: #35363a; display: flex; align-items: center; padding: 0 12px; gap: 8px; }
+  .chrome-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .chrome-toolbar { height: 40px; background: #292a2d; display: flex; align-items: center; padding: 0 12px; gap: 10px; }
+  .chrome-url { flex: 1; height: 26px; background: #35363a; color: #9aa0a6; border-radius: 13px; padding: 0 14px; font-size: 12px; line-height: 26px; }
+</style>
+</head>
+<body>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="widgets/Toad.jsx"></script>
+<script type="text/babel" src="widgets/WidgetCreamLight.jsx"></script>
+<script type="text/babel" src="widgets/WidgetCreamDark.jsx"></script>
+<script type="text/babel" src="widgets/WidgetCreamCompact.jsx"></script>
+<script type="text/babel" src="widgets/WidgetPixelLight.jsx"></script>
+<script type="text/babel" src="widgets/WidgetSettingsLight.jsx"></script>
+
+<script type="text/babel">
+  const { DesignCanvas, DCSection, DCArtboard } = window;
+
+  function PopupStage({ children, bg = '#EFE8D5', pad = 24 }) {
+    return (
+      <div style={{
+        width: '100%', height: '100%', background: bg,
+        display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+        padding: pad,
+      }}>
+        {children}
+      </div>
+    );
+  }
+
+  function ToolbarPreview() {
+    return (
+      <div style={{
+        width: '100%', height: '100%', background: '#e8e8e8',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: 30, gap: 14,
+      }}>
+        <div className="chrome-shell">
+          <div className="chrome-titlebar">
+            <span className="chrome-dot" style={{background: '#ff5f57'}} />
+            <span className="chrome-dot" style={{background: '#febc2e'}} />
+            <span className="chrome-dot" style={{background: '#28c840'}} />
+          </div>
+          <div className="chrome-toolbar">
+            <span style={{color: '#9aa0a6'}}>←</span>
+            <span style={{color: '#9aa0a6'}}>→</span>
+            <span style={{color: '#9aa0a6'}}>↻</span>
+            <div className="chrome-url">console.anthropic.com/workbench</div>
+            <div style={{width: 22, height: 22, background: '#3c4043', borderRadius: 4}} />
+            <div style={{width: 22, height: 22, background: '#3c4043', borderRadius: 4}} />
+            <div style={{position: 'relative', width: 24, height: 24, marginRight: 10}}>
+              <img src="assets/claude-toad-square.png" style={{width: '100%', height: '100%', imageRendering: 'pixelated'}} />
+              <span style={{
+                position: 'absolute', bottom: -5, left: '50%', transform: 'translateX(-50%)',
+                background: '#F4EFE3', color: '#C96442',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 8, fontWeight: 700,
+                padding: '1px 4px', borderRadius: 3,
+                whiteSpace: 'nowrap', border: '1px solid #C96442',
+              }}>$4.23</span>
+            </div>
+          </div>
+          <div style={{height: 240, background: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3f3f46', fontSize: 12, fontFamily: 'JetBrains Mono, monospace'}}>
+            popup closed · banner shows today's spend
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function App() {
+    return (
+      <DesignCanvas
+        title="Claude Toad — API Spending Widget"
+        subtitle="Final · Cream theme (light/dark) + Compact + Retro · Banner badge · Settings"
+        defaultZoom={0.8}
+      >
+        <DCSection id="main" title="C · Cream — light & dark (same block, switchable theme)">
+          <DCArtboard id="cream-light" label="C · Cream Light" width={420} height={640}>
+            <PopupStage bg="#EFE8D5"><WidgetCreamLight /></PopupStage>
+          </DCArtboard>
+
+          <DCArtboard id="cream-dark" label="C · Cream Dark" width={420} height={640}>
+            <PopupStage bg="#1a1815"><WidgetCreamDark /></PopupStage>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="compact" title="A · Cream Compact — minimal 'glance' view">
+          <DCArtboard id="compact-1" label="A · Cream Compact" width={420} height={300}>
+            <PopupStage bg="#EFE8D5" pad={20}><WidgetCreamCompact /></PopupStage>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="retro" title="D · Retro — selectable theme in settings">
+          <DCArtboard id="retro-1" label="D · Pixel Arcade (retro theme)" width={420} height={640}>
+            <PopupStage bg="#EFE8D5"><WidgetPixelLight /></PopupStage>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="badge" title="Toolbar mini-badge">
+          <DCArtboard id="banner" label="Banner · $4.23" width={820} height={360}>
+            <ToolbarPreview />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="settings" title="Settings page">
+          <DCArtboard id="settings-light" label="Settings — Cream Light" width={420} height={700}>
+            <PopupStage bg="#EFE8D5"><WidgetSettingsLight /></PopupStage>
+          </DCArtboard>
+
+          <DCArtboard id="tokens" label="Tokens · palette + type" width={780} height={700}>
+            <Tokens />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+    );
+  }
+
+  function Tokens() {
+    const swatches = [
+      {n: 'cream/bg',       v: '#F4EFE3'},
+      {n: 'cream/raised',   v: '#FBF7EA'},
+      {n: 'cream/line',     v: '#E5DDC8'},
+      {n: 'dark/bg',        v: '#262521'},
+      {n: 'dark/raised',    v: '#2e2c27'},
+      {n: 'dark/line',      v: '#3a3833'},
+      {n: 'text/hi-light',  v: '#1a1815'},
+      {n: 'text/lo-light',  v: '#8a8470'},
+      {n: 'text/hi-dark',   v: '#F4EFE3'},
+      {n: 'text/lo-dark',   v: '#9c9486'},
+      {n: 'accent/orange',  v: '#C96442'},
+      {n: 'provider/openai',v: '#7d8775'},
+    ];
+    return (
+      <div style={{padding: 32, height: '100%', overflow: 'auto', background: '#fafaf9', color: '#1a1a1a'}}>
+        <h3 style={{margin: 0, fontSize: 14, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#71717a'}}>Color tokens</h3>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 14}}>
+          {swatches.map(sw => (
+            <div key={sw.n} style={{display: 'flex', alignItems: 'center', gap: 10, padding: 10, border: '1px solid #e4e4e7', borderRadius: 8, background: '#fff'}}>
+              <div style={{width: 36, height: 36, borderRadius: 6, background: sw.v, border: '1px solid #e4e4e7'}} />
+              <div>
+                <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#27272a'}}>{sw.n}</div>
+                <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#71717a'}}>{sw.v}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h3 style={{margin: '28px 0 14px', fontSize: 14, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#71717a'}}>Type</h3>
+        <div style={{padding: 16, border: '1px solid #e4e4e7', borderRadius: 8, background: '#fff'}}>
+          <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 38, fontWeight: 600, letterSpacing: '-0.03em', color: '#1a1815'}}>$4.23</div>
+          <div style={{fontSize: 11, color: '#71717a', marginTop: 2}}>JetBrains Mono · 600 · 38/38 — hero number</div>
+          <div style={{height: 1, background: '#e4e4e7', margin: '14px 0'}} />
+          <div style={{fontFamily: 'Inter, sans-serif', fontSize: 15, fontWeight: 600, color: '#1a1815'}}>API Spending</div>
+          <div style={{fontSize: 11, color: '#71717a', marginTop: 2}}>Inter · 600 · 15/20 — title</div>
+          <div style={{height: 1, background: '#e4e4e7', margin: '14px 0'}} />
+          <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#3d362a'}}>claude-opus-4 · $0.42</div>
+          <div style={{fontSize: 11, color: '#71717a', marginTop: 2}}>JetBrains Mono · 400 · 11/16 — data rows</div>
+          <div style={{height: 1, background: '#e4e4e7', margin: '14px 0'}} />
+          <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8a8470', fontWeight: 600}}>BY PROVIDER</div>
+          <div style={{fontSize: 11, color: '#71717a', marginTop: 2}}>Inter · 600 · 10/12 · 0.08em tracking — section labels</div>
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

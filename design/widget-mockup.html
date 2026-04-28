@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Spending Monitor — Chrome Extension Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #e8e8e8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding-top: 0;
+    min-height: 100vh;
+  }
+
+  /* ---- Chrome browser frame ---- */
+  .chrome-frame {
+    width: 1100px;
+    background: #202124;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+    position: relative;
+    height: 700px;
+  }
+
+  .chrome-titlebar {
+    height: 38px;
+    background: #35363a;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .chrome-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .chrome-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .chrome-dot.red    { background: #ff5f57; }
+  .chrome-dot.yellow { background: #febc2e; }
+  .chrome-dot.green  { background: #28c840; }
+
+  .chrome-tabs {
+    display: flex;
+    margin-left: 12px;
+    gap: 1px;
+  }
+  .chrome-tab {
+    background: #202124;
+    color: #9aa0a6;
+    font-size: 12px;
+    padding: 6px 16px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chrome-tab.active { background: #292a2d; color: #e8eaed; }
+
+  .chrome-toolbar {
+    height: 36px;
+    background: #292a2d;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .chrome-nav-btn {
+    color: #9aa0a6;
+    font-size: 16px;
+    width: 28px;
+    text-align: center;
+  }
+  .chrome-url-bar {
+    flex: 1;
+    background: #35363a;
+    color: #9aa0a6;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 16px;
+    border: none;
+  }
+  .chrome-ext-icons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: relative;
+  }
+  .chrome-ext-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: #555;
+  }
+  .chrome-ext-icon.active {
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Toad icon in toolbar */
+  .toad-ext-icon {
+    width: 22px;
+    height: 22px;
+    position: relative;
+    cursor: pointer;
+  }
+  .toad-ext-icon img {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+  .ext-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background: #22c55e;
+    color: #000;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 3px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Page content behind */
+  .chrome-page {
+    background: #1a1a2e;
+    height: calc(100% - 74px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3f3f46;
+    font-size: 14px;
+  }
+
+  /* ---- Extension popup ---- */
+  .popup-container {
+    position: absolute;
+    top: 74px;
+    right: 20px;
+    z-index: 100;
+    filter: drop-shadow(0 8px 40px rgba(0,0,0,0.5));
+  }
+  .popup-arrow {
+    width: 12px;
+    height: 12px;
+    background: #0a0a1a;
+    transform: rotate(45deg);
+    position: absolute;
+    top: -5px;
+    right: 18px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    z-index: 1;
+  }
+
+  .widget {
+    width: 370px;
+    background: #0a0a1a;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #e4e4e7;
+    font-size: 13px;
+    position: relative;
+  }
+
+  /* ---- Header ---- */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .toad-header {
+    width: 36px;
+    height: auto;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toad-header .toad-body {
+    width: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+  .toad-header .toad-eye {
+    position: absolute;
+    background: #000;
+    transition: transform .08s linear, height .08s ease;
+  }
+  .toad-header .toad-eye.left {
+    left: 24.97%; top: 17.14%; width: 8.28%; height: 13.27%;
+  }
+  .toad-header .toad-eye.right {
+    left: 66.90%; top: 17.14%; width: 8.28%; height: 13.27%;
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #f4f4f5;
+    flex: 1;
+  }
+  .header .updated {
+    font-size: 10px;
+    color: #3f3f46;
+  }
+
+  /* ---- Summary Cards ---- */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 14px 16px;
+  }
+  .summary-card {
+    background: #111125;
+    border-radius: 8px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .summary-card.active {
+    border-color: rgba(34,197,94,0.3);
+    background: #0f1a14;
+  }
+  .summary-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #52525b;
+    margin-bottom: 6px;
+  }
+  .summary-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f4f4f5;
+  }
+  .summary-card.active .summary-value {
+    color: #22c55e;
+    font-size: 20px;
+  }
+  .summary-secondary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #3f3f46;
+    margin-top: 2px;
+  }
+
+  /* ---- Section ---- */
+  .section { padding: 10px 16px; }
+  .section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #3f3f46;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ---- Provider Bars ---- */
+  .provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .provider:last-child { margin-bottom: 0; }
+  .provider-name {
+    width: 64px;
+    font-size: 11px;
+    color: #71717a;
+    flex-shrink: 0;
+  }
+  .provider-bar-track {
+    flex: 1;
+    height: 6px;
+    background: #18182f;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .provider-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+  .provider-bar-fill.anthropic { background: #22c55e; width: 73%; }
+  .provider-bar-fill.openai    { background: #3b82f6; width: 23%; }
+  .provider-bar-fill.gemini    { background: #f59e0b; width: 4%; }
+  .provider-cost {
+    width: 44px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #a1a1aa;
+  }
+
+  /* ---- Requests ---- */
+  .requests { border-top: 1px solid rgba(255,255,255,0.04); }
+  .request-row {
+    display: flex;
+    align-items: center;
+    padding: 7px 16px;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .request-row:last-child { border-bottom: none; }
+  .request-time {
+    width: 44px;
+    font-size: 10px;
+    color: #3f3f46;
+    flex-shrink: 0;
+  }
+  .request-dot {
+    width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+  }
+  .request-dot.anthropic { background: #22c55e; }
+  .request-dot.openai    { background: #3b82f6; }
+  .request-dot.gemini    { background: #f59e0b; }
+  .request-model {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #71717a;
+  }
+  .request-cost {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #a1a1aa;
+    width: 44px;
+    text-align: right;
+  }
+
+  /* ---- Footer ---- */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #52525b;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .footer-btn:hover {
+    border-color: rgba(255,255,255,0.15);
+    color: #a1a1aa;
+  }
+  .footer-btn svg { width: 13px; height: 13px; }
+
+  /* ---- Toad speech bubble ---- */
+  .toad-speech {
+    position: absolute;
+    top: 8px;
+    left: 58px;
+    background: #1A1A19;
+    color: #F4EFE3;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    line-height: 1.35;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: fadeIn .2s ease;
+    z-index: 5;
+  }
+  .toad-speech::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 5px solid #1A1A19;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Chrome browser frame -->
+<div class="chrome-frame">
+  <div class="chrome-titlebar">
+    <div class="chrome-dots">
+      <div class="chrome-dot red"></div>
+      <div class="chrome-dot yellow"></div>
+      <div class="chrome-dot green"></div>
+    </div>
+    <div class="chrome-tabs">
+      <div class="chrome-tab active">Claude Console</div>
+      <div class="chrome-tab">GitHub</div>
+    </div>
+  </div>
+  <div class="chrome-toolbar">
+    <span class="chrome-nav-btn">&larr;</span>
+    <span class="chrome-nav-btn">&rarr;</span>
+    <span class="chrome-nav-btn">&#x21bb;</span>
+    <div class="chrome-url-bar">console.anthropic.com/workbench</div>
+    <div class="chrome-ext-icons">
+      <div class="chrome-ext-icon"></div>
+      <div class="chrome-ext-icon"></div>
+      <div class="toad-ext-icon active">
+        <img src="claude-toad-square.png" alt="API Spending">
+        <span class="ext-badge">$4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-page">
+    console.anthropic.com
+  </div>
+
+  <!-- Extension popup dropdown -->
+  <div class="popup-container">
+    <div class="popup-arrow"></div>
+    <div class="widget">
+
+      <!-- Header with real toad -->
+      <div class="header">
+        <div class="toad-header" id="toad">
+          <img class="toad-body" src="claude-toad-clear-no-eyes.png" alt="">
+          <div class="toad-eye left" id="eyeL"></div>
+          <div class="toad-eye right" id="eyeR"></div>
+        </div>
+        <span class="header-title">API Spending</span>
+        <span class="updated">updated 2m ago</span>
+        <div class="toad-speech" id="speech">Ribbiting productivity.</div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary">
+        <div class="summary-card active">
+          <div class="summary-label">Today</div>
+          <div class="summary-value">$4.23</div>
+          <div class="summary-secondary">&pound;3.35</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">This Week</div>
+          <div class="summary-value">$28.71</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">This Month</div>
+          <div class="summary-value">$142.50</div>
+        </div>
+      </div>
+
+      <!-- By Provider -->
+      <div class="section">
+        <div class="section-title">By Provider <span>today</span></div>
+        <div class="provider">
+          <span class="provider-name">Anthropic</span>
+          <div class="provider-bar-track"><div class="provider-bar-fill anthropic"></div></div>
+          <span class="provider-cost">$3.10</span>
+        </div>
+        <div class="provider">
+          <span class="provider-name">OpenAI</span>
+          <div class="provider-bar-track"><div class="provider-bar-fill openai"></div></div>
+          <span class="provider-cost">$0.98</span>
+        </div>
+        <div class="provider">
+          <span class="provider-name">Gemini</span>
+          <div class="provider-bar-track"><div class="provider-bar-fill gemini"></div></div>
+          <span class="provider-cost">$0.15</span>
+        </div>
+      </div>
+
+      <!-- Recent Requests -->
+      <div class="section requests">
+        <div class="section-title">Recent Requests</div>
+        <div class="request-row">
+          <span class="request-time">2m ago</span>
+          <span class="request-dot anthropic"></span>
+          <span class="request-model">claude-opus-4</span>
+          <span class="request-cost">$0.42</span>
+        </div>
+        <div class="request-row">
+          <span class="request-time">5m ago</span>
+          <span class="request-dot openai"></span>
+          <span class="request-model">gpt-4o</span>
+          <span class="request-cost">$0.08</span>
+        </div>
+        <div class="request-row">
+          <span class="request-time">12m ago</span>
+          <span class="request-dot anthropic"></span>
+          <span class="request-model">claude-sonnet-4</span>
+          <span class="request-cost">$0.12</span>
+        </div>
+        <div class="request-row">
+          <span class="request-time">1h ago</span>
+          <span class="request-dot gemini"></span>
+          <span class="request-model">gemini-2.5-pro</span>
+          <span class="request-cost">$0.03</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <button class="footer-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Settings
+        </button>
+        <button class="footer-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Toad eye tracking
+const toad = document.getElementById('toad');
+const eyeL = document.getElementById('eyeL');
+const eyeR = document.getElementById('eyeR');
+
+document.addEventListener('mousemove', (e) => {
+  if (!toad) return;
+  const rect = toad.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height * 0.3;
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const max = rect.width * 0.03;
+  const scale = Math.min(1, dist / 200);
+  const ang = Math.atan2(dy, dx);
+  const ox = Math.cos(ang) * max * scale;
+  const oy = Math.sin(ang) * max * scale;
+  eyeL.style.transform = `translate(${ox}px, ${oy}px)`;
+  eyeR.style.transform = `translate(${ox}px, ${oy}px)`;
+});
+
+// Blinking
+let blinkTimeout;
+function scheduleBlink() {
+  const delay = 3000 + Math.random() * 5000;
+  blinkTimeout = setTimeout(() => {
+    eyeL.style.height = '2%';
+    eyeR.style.height = '2%';
+    eyeL.style.marginTop = '5.5%';
+    eyeR.style.marginTop = '5.5%';
+    setTimeout(() => {
+      eyeL.style.height = '13.27%';
+      eyeR.style.height = '13.27%';
+      eyeL.style.marginTop = '0';
+      eyeR.style.marginTop = '0';
+    }, 140);
+    scheduleBlink();
+  }, delay);
+}
+scheduleBlink();
+
+// Speech bubble rotation
+const quips = [
+  'Ribbiting productivity.',
+  'Toadally organised.',
+  'Counting your tokens...',
+  'Eating bugs, tracking costs.',
+  '$4.23 today. Not bad.',
+  'Croak. But productive.',
+  'Thinking in lily pads...',
+  'Your swamp costs money.',
+];
+const speech = document.getElementById('speech');
+let quipIdx = 0;
+setInterval(() => {
+  quipIdx = (quipIdx + 1) % quips.length;
+  speech.style.animation = 'none';
+  speech.offsetHeight;
+  speech.textContent = quips[quipIdx];
+  speech.style.animation = 'fadeIn .2s ease';
+}, 4000);
+</script>
+
+</body>
+</html>

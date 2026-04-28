@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nickkelly1/tauri-plugin-shell/v2-beta.0/permissions/schemas/schema.json",
+  "identifier": "default",
+  "description": "Default capabilities",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open"
+  ]
+}
